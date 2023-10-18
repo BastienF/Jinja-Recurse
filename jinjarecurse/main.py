@@ -11,7 +11,9 @@ Options:
 import jinja2
 import yaml
 import sys
+import shutil
 
+from binaryornot.check import is_binary
 from pathlib import Path
 from docopt import docopt
 
@@ -44,9 +46,16 @@ def write_template(ipath, opath, variables):
     opath_result = opath_template.render(**variables)
     opath_result.parent.mkdir(parents=True, exist_ok=True)
     print("Writing from {} to {}".format(ipath, opath_result))
-    template = jinja2.Template(ipath.read_text())
-    opath_result.write_text(template.render(**variables))
 
+    if is_binary(str(ipath.absolute())):
+        copying_without_templating(ipath, opath_result, "{} is binary.".format(ipath))
+    else:
+        template = jinja2.Template(ipath.read_text())
+        opath_result.write_text(template.render(**variables))
+
+def copying_without_templating(ipath, opath, reason):
+    print("WARNING: {}. Copying without templating.".format(reason))
+    shutil.copyfile(str(ipath), str(opath))
 
 def check_paths(**kwargs):
     bail = False
@@ -58,7 +67,8 @@ def check_paths(**kwargs):
             print("ERROR: {} ({}) does not exist".format(path, k), file=sys.stderr)
             bail = True
         if k == 'output' and path.exists():
-            print("WARNING: {} ({}) exists and any conflicting files will be overwritten".format(path, k), file=sys.stderr)
+            print("WARNING: {} ({}) exists and any conflicting files will be overwritten".format(path, k),
+                  file=sys.stderr)
     if bail:
         sys.exit(1)
 

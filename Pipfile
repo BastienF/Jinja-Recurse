@@ -8,6 +8,7 @@ pathlib2 = "*"
 jinja2 = "*"
 docopt = "*"
 pyyaml = "*"
+binaryornot = "*"
 
 [requires]
 python_version = "3.8"
