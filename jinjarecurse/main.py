@@ -49,16 +49,35 @@ def write_template(ipath, opath, variables):
 
     if is_binary(str(ipath.absolute())):
         copying_without_templating(ipath, opath_result, "{} is binary.".format(ipath))
+    elif check_file_is_empty(str(ipath.absolute()), opath_result):
+        copying_without_templating(ipath, opath_result, "{} is empty.".format(ipath))
     else:
         try:
-            template = jinja2.Template(ipath.read_text())
-            opath_result.write_text(template.render(**variables))
+            template = jinja2.get_template(str(ipath.absolute()))
+            file_content = template.render(**variables)
+
+            if file_content and not file_content.isspace():
+                opath_result.write_text(file_content)
+                opath_result.chmod(ipath.stat().st_mode)
+            else:
+                print("WARNING: {} is empty after templating. Ignoring file".format(ipath))
         except:
             copying_without_templating(ipath, opath_result, "Failed to generate template for {}.".format(ipath))
+
 
 def copying_without_templating(ipath, opath, reason):
     print("WARNING: {}. Copying without templating.".format(reason))
     shutil.copyfile(str(ipath), str(opath))
+
+
+def check_file_is_empty(ipath, opath):
+    try:
+        with open(ipath, 'r') as f:
+            file_content = f.read()
+            return not file_content or file_content.isspace()
+    except:
+        copying_without_templating(ipath, opath, "Failed to read {}.".format(ipath))
+
 
 def check_paths(**kwargs):
     bail = False
