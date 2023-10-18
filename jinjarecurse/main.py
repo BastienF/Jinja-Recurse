@@ -40,9 +40,11 @@ def template(paths, variables):
 
 
 def write_template(ipath, opath, variables):
-    print("Writing from {} to {}".format(ipath, opath))
+    opath_template = jinja2.from_string(str(opath.absolute()))
+    opath_result = opath_template.render(**variables)
+    print("Writing from {} to {}".format(ipath, opath_result))
     template = jinja2.Template(ipath.read_text())
-    opath.write_text(template.render(**variables))
+    opath_result.write_text(template.render(**variables))
 
 
 def check_paths(**kwargs):
