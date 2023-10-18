@@ -50,8 +50,11 @@ def write_template(ipath, opath, variables):
     if is_binary(str(ipath.absolute())):
         copying_without_templating(ipath, opath_result, "{} is binary.".format(ipath))
     else:
-        template = jinja2.Template(ipath.read_text())
-        opath_result.write_text(template.render(**variables))
+        try:
+            template = jinja2.Template(ipath.read_text())
+            opath_result.write_text(template.render(**variables))
+        except:
+            copying_without_templating(ipath, opath_result, "Failed to generate template for {}.".format(ipath))
 
 def copying_without_templating(ipath, opath, reason):
     print("WARNING: {}. Copying without templating.".format(reason))
