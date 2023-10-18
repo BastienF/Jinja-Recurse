@@ -42,6 +42,7 @@ def template(paths, variables):
 def write_template(ipath, opath, variables):
     opath_template = jinja2.from_string(str(opath.absolute()))
     opath_result = opath_template.render(**variables)
+    opath_result.parent.mkdir(parents=True, exist_ok=True)
     print("Writing from {} to {}".format(ipath, opath_result))
     template = jinja2.Template(ipath.read_text())
     opath_result.write_text(template.render(**variables))
